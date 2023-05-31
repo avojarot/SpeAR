@@ -2,6 +2,7 @@ import os
 
 import openai
 import telebot
+from fastapi import FastAPI, Request
 from telebot import types
 
 from src import convert_to_mp3
@@ -11,6 +12,18 @@ openai_key = "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"
 openai.api_key = openai_key
 
 bot = telebot.TeleBot(token)
+print(bot.get_webhook_info())
+app = FastAPI()
+print(bot.get_webhook_info())
+
+
+@app.post("/webhoock")
+def webhook(request: Request):
+    json_string = request.json()
+    print(json_string)
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return dict()
 
 
 def convert_speech_to_text(audio_filepath):
@@ -38,6 +51,3 @@ def asr_in_voice(message: types.Message):
     text = convert_speech_to_text(mp3_file)
     os.remove(mp3_file)
     bot.send_message(message.chat.id, text)
-
-
-bot.polling(none_stop=True, interval=0)

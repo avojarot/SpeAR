@@ -2,3 +2,4 @@ openai
 pytelegrambotapi
 librosa
 fastapi
+uvicorn
