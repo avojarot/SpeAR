@@ -22,7 +22,7 @@ steps:
       - cloud-build-instance-template-$_ENV-$SHORT_SHA
       - --custom-cpu=1
       - --custom-memory=2GB
-      - --boot-disk-size=20GB
+      - --boot-disk-size=10GB
       - --region=$_SERVICE_REGION
       - --subnet=mig-subnet
       - --tags=allow-hc-and-proxy,allow-ssh
