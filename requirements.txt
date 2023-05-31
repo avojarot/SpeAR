@@ -1,11 +1,4 @@
-black
-flake8
-flake8-pyi
-isort
-mypy
-pre-commit
-pytest
-pytest-cov
 openai
-aiogram
+pytelegrambotapi
 librosa
+fastapi

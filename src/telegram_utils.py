@@ -7,18 +7,17 @@ import soundfile as sf
 AUDIOS_DIR = "./audio/"
 
 
-async def handle_file(bot, file, file_name: str, path: str):
-    await bot.download_file(file_path=file.file_path, destination=f"{path}/{file_name}")
-
-
-async def download_voice(voice, bot, format):
-    ogg_filepath = f"{voice.file_id}.{format}"
-    await handle_file(bot, voice, ogg_filepath, AUDIOS_DIR)
-    return os.path.join(AUDIOS_DIR, ogg_filepath)
-
-
-def convert_to_mp3(ogg_filepath, format):
+def convert_to_mp3(bot, file):
+    file_format = file.file_path.split(".")[-1]
     mp3_filepath = os.path.join(AUDIOS_DIR, f"{str(uuid.uuid4())}.mp3")
+    ogg_filepath = os.path.join(AUDIOS_DIR, f"{str(uuid.uuid4())}.{file_format}")
+
+    downloaded_file = bot.download_file(file.file_path)
+
+    with open(ogg_filepath, "wb") as new_file:
+        new_file.write(downloaded_file)
+
     audio, sr = librosa.load(ogg_filepath)
     sf.write(mp3_filepath, audio, sr)
+    os.remove(ogg_filepath)
     return mp3_filepath
