@@ -9,8 +9,8 @@ AUDIOS_DIR = "./audio/"
 
 def convert_to_mp3(bot, file):
     file_format = file.file_path.split(".")[-1]
-    mp3_filepath = os.path.join(AUDIOS_DIR, f"{str(uuid.uuid4())}.mp3")
-    ogg_filepath = os.path.join(AUDIOS_DIR, f"{str(uuid.uuid4())}.{file_format}")
+    mp3_filepath = f"{str(uuid.uuid4())}.mp3"
+    ogg_filepath = f"{str(uuid.uuid4())}.{file_format}"
 
     downloaded_file = bot.download_file(file.file_path)
 
