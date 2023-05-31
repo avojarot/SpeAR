@@ -14,9 +14,10 @@ bot = telebot.TeleBot(token)
 bot.delete_webhook()
 
 
-def convert_speech_to_text(audio_filepath):
+def convert_speech_to_text(message, audio_filepath):
     with open(audio_filepath, "rb") as audio:
         is_not_done = True
+        bot.send_message(message.chat.id, audio_filepath)
         while is_not_done:
             try:
                 transcript = openai.Audio.transcribe("whisper-1", audio)
@@ -36,7 +37,7 @@ def asr_in_voice(message: types.Message):
     voice = message.voice if message.voice else message.audio
     voice_file = bot.get_file(voice.file_id)
     mp3_file = convert_to_mp3(bot, voice_file)
-    text = convert_speech_to_text(mp3_file)
+    text = convert_speech_to_text(message, mp3_file)
     os.remove(mp3_file)
     bot.send_message(message.chat.id, text)
 
