@@ -10,14 +10,13 @@ from src import convert_to_mp3
 token = "6121471539:AAEPfxQU0ed14z0CQxgF57MLCRgkAd5rjSg"
 openai_key = "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"
 openai.api_key = openai_key
-
+webhook_link = "https://spear-bot-5x7n2jev2q-ew.a.run.app/webhook/"
 bot = telebot.TeleBot(token)
-print(bot.get_webhook_info())
+bot.set_webhook(webhook_link)
 app = FastAPI()
-print(bot.get_webhook_info())
 
 
-@app.post("/webhoock")
+@app.post("/webhook/")
 def webhook(request: Request):
     json_string = request.json()
     print(json_string)
