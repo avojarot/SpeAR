@@ -1,0 +1,46 @@
+#-----------------------------------------
+# CloudBuild Pipeline for Prod CloudRun
+#-----------------------------------------
+steps:
+# Docker Build Image
+  - name: gcr.io/cloud-builders/docker
+    id  : BUILD
+    args: ['build', '-t', '$_SERVICE_IMAGE', '.', '-f', 'Dockerfile']
+
+# Docker Push Image to Artifact Registry
+  - name: gcr.io/cloud-builders/docker
+    id  : PUSH
+    args: ['push', '$_SERVICE_IMAGE']
+
+# Create the new instance template
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: create-instance-template
+  args:
+    - compute
+    - instance-templates
+    - create-with-container
+    - cloud-build-instance-template-$_ENV-$SHORT_SHA
+    - --custom-cpu=1
+    - --custom-memory=2GB
+    - --boot-disk-size=20GB
+    - --region=$_SERVICE_REGION
+    - --subnet=mig-subnet
+    - --tags=allow-hc-and-proxy,allow-ssh
+    - --container-image
+    - $_SERVICE_IMAGE
+
+ # # create the managed instance group
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c','gcloud compute instance-groups managed rolling-action start-update cloudbuild-mig --version=template=cloud-build-instance-template-v1-$_ENV-$SHORT_SHA --region=europe-west1 --max-unavailable=0']
+
+images: # Display the image in the build results - Build Artifacts
+- $_SERVICE_IMAGE
+
+substitutions:
+    _SERVICE_IMAGE    : europe-west1-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REGISTRY}/${_DOCKER_IMAGENAME}:${SHORT_SHA}
+    _SERVICE_REGION   : europe-west1
+    _SERVICE_PROJECT  : spear-bot-388313
+    _SERVICE_NAME     : my-docker-app-prod
+    _DOCKER_REGISTRY  : cloud-run-source-deploy
+    _DOCKER_IMAGENAME : spear-bot
