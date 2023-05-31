@@ -24,7 +24,6 @@ steps:
       - --custom-memory=2GB
       - --boot-disk-size=10GB
       - --region=$_SERVICE_REGION
-      - --subnet=mig-subnet
       - --tags=allow-hc-and-proxy,allow-ssh
       - --container-image
       - $_SERVICE_IMAGE
