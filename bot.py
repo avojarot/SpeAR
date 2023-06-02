@@ -4,7 +4,9 @@ import openai
 import telebot
 from telebot import types
 
-from src import convert_to_mp3
+from src import Diarizer, MyPredictor, convert_to_mp3
+from src.model.asr import AsrModel
+from src.model.models.dolg import *
 
 token = "6121471539:AAEPfxQU0ed14z0CQxgF57MLCRgkAd5rjSg"
 openai_key = "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"
@@ -12,6 +14,7 @@ openai.api_key = openai_key
 
 bot = telebot.TeleBot(token)
 bot.delete_webhook()
+predictor = MyPredictor()
 
 
 def convert_speech_to_text(audio_filepath):
@@ -21,8 +24,8 @@ def convert_speech_to_text(audio_filepath):
             try:
                 transcript = openai.Audio.transcribe("whisper-1", audio)
                 is_not_done = False
-            except Exception:
-                is_not_done = True
+            except openai.error.RateLimitError:
+                return "OpenAI error, try again later"
         return transcript["text"]
 
 

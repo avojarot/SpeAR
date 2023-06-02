@@ -21,8 +21,8 @@ steps:
       - create-with-container
       - cloud-build-instance-template-$_ENV-$SHORT_SHA
       - --custom-cpu=1
-      - --custom-memory=2GB
-      - --boot-disk-size=10GB
+      - --custom-memory=8GB
+      - --boot-disk-size=20GB
       - --region=$_SERVICE_REGION
       - --tags=allow-hc-and-proxy,allow-ssh
       - --container-image

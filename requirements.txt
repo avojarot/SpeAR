@@ -1,3 +1,7 @@
 openai
 pytelegrambotapi
 librosa
+nemo_toolkit[asr]~=1.18.0
+timm==0.6.12
+torch
+torchaudio
