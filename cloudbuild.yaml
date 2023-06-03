@@ -20,7 +20,7 @@ steps:
       - instance-templates
       - create-with-container
       - cloud-build-instance-template-$_ENV-$SHORT_SHA
-      - --custom-cpu=1
+      - --custom-cpu=2
       - --custom-memory=8GB
       - --boot-disk-size=20GB
       - --region=$_SERVICE_REGION
