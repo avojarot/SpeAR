@@ -7,9 +7,9 @@ import soundfile as sf
 AUDIOS_DIR = "./audio/"
 
 
-def convert_to_mp3(bot, file):
+def convert_to_wav(bot, file):
     file_format = file.file_path.split(".")[-1]
-    mp3_filepath = f"{str(uuid.uuid4())}.mp3"
+    mp3_filepath = f"{str(uuid.uuid4())}.wav"
     ogg_filepath = f"{str(uuid.uuid4())}.{file_format}"
 
     downloaded_file = bot.download_file(file.file_path)
@@ -20,4 +20,4 @@ def convert_to_mp3(bot, file):
     audio, sr = librosa.load(ogg_filepath)
     sf.write(mp3_filepath, audio, sr)
     os.remove(ogg_filepath)
-    return mp3_filepath
+    return mp3_filepath, sr

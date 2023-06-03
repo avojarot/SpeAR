@@ -6,3 +6,4 @@ timm==0.6.12
 torch
 torchaudio
 gdown
+google-cloud-speech

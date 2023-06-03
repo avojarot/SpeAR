@@ -2,9 +2,10 @@ import os
 
 import openai
 import telebot
+from google.cloud import speech
 from telebot import types
 
-from src import Diarizer, MyPredictor, convert_to_mp3
+from src import Diarizer, MyPredictor, convert_to_wav
 from src.model.asr import AsrModel
 from src.model.models.dolg import *
 
@@ -15,6 +16,9 @@ openai.api_key = openai_key
 bot = telebot.TeleBot(token)
 bot.delete_webhook()
 predictor = MyPredictor()
+
+posible_options = ["SpeAR Ua", "OpenAI", "Google Speech-to-text"]
+concurrent_model = posible_options[0]
 
 
 def convert_speech_to_text_openai(audio_filepath):
@@ -29,23 +33,66 @@ def convert_speech_to_text_openai(audio_filepath):
         return transcript["text"]
 
 
+def convert_speech_to_text_google(audio_filepath, sr):
+    client = speech.SpeechClient.from_service_account_file(
+        "./credentials/spear-bot-388313-6a23d6901400.json"
+    )
+    with open(audio_filepath, "rb") as f:
+        mp3_data = f.read()
+    audio_file = speech.RecognitionAudio(content=mp3_data)
+    config = speech.RecognitionConfig(sample_rate_hertz=sr, language_code="uk-UA")
+    response = client.recognize(config=config, audio=audio_file)
+    if len(response.results) < 1:
+        return "GCP error"
+
+    text = response.results[0].alternatives[0].transcript
+    return text
+
+
 def convert_speech_to_text_my(audio_filepath):
     text = predictor.predict(audio_filepath)
     return text
 
 
 @bot.message_handler(commands="start")
-def hello(message: types.Message):
-    bot.send_message(message.chat.id, "Hello")
+def initail_mock_up(message: types.Message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("OpenAI")
+    btn2 = types.KeyboardButton("Google Speech-to-text")
+    btn3 = types.KeyboardButton("SpeAR Ua")
+
+    markup.add(btn1, btn2, btn3)
+    bot.send_message(
+        message.chat.id,
+        f"Оберіть модель для розпізнавання мовлення. Поточна модель: {concurrent_model}",
+        reply_markup=markup,
+    )
+
+
+@bot.message_handler(content_types=["text"])
+def change_model(message: types.Message):
+    text = message.text
+    global concurrent_model
+    if text in posible_options:
+        concurrent_model = text
 
 
 @bot.message_handler(content_types=["voice", "audio"])
 def asr_in_voice(message: types.Message):
     voice = message.voice if message.voice else message.audio
     voice_file = bot.get_file(voice.file_id)
-    mp3_file = convert_to_mp3(bot, voice_file)
-    text = convert_speech_to_text_my(mp3_file)
-    os.remove(mp3_file)
+    wav_file, sr = convert_to_wav(bot, voice_file)
+
+    if concurrent_model == posible_options[0]:
+        text = convert_speech_to_text_my(wav_file)
+
+    elif concurrent_model == posible_options[1]:
+        text = convert_speech_to_text_openai(wav_file)
+
+    else:
+        text = convert_speech_to_text_google(wav_file, sr)
+
+    os.remove(wav_file)
     bot.send_message(message.chat.id, text)
 
 
