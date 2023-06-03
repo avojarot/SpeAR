@@ -17,7 +17,7 @@ bot.delete_webhook()
 predictor = MyPredictor()
 
 
-def convert_speech_to_text(audio_filepath):
+def convert_speech_to_text_openai(audio_filepath):
     with open(audio_filepath, "rb") as audio:
         is_not_done = True
         while is_not_done:
@@ -27,6 +27,11 @@ def convert_speech_to_text(audio_filepath):
             except openai.error.RateLimitError:
                 return "OpenAI error, try again later"
         return transcript["text"]
+
+
+def convert_speech_to_text_my(audio_filepath):
+    text = predictor.predict(audio_filepath)
+    return text
 
 
 @bot.message_handler(commands="start")
@@ -39,7 +44,7 @@ def asr_in_voice(message: types.Message):
     voice = message.voice if message.voice else message.audio
     voice_file = bot.get_file(voice.file_id)
     mp3_file = convert_to_mp3(bot, voice_file)
-    text = convert_speech_to_text(mp3_file)
+    text = convert_speech_to_text_my(mp3_file)
     os.remove(mp3_file)
     bot.send_message(message.chat.id, text)
 

@@ -4,10 +4,10 @@ import librosa
 import torch
 from tqdm import tqdm
 
-from downloading import download_file_from_google_drive
-from model import Diarizer
-from model.asr import AsrModel
-from model.models.dolg import *
+from .downloading import download_file_from_google_drive
+from .model import Diarizer
+from .model.asr import AsrModel
+from .model.models.dolg import *
 
 
 class MyPredictor:
