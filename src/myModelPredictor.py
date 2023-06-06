@@ -28,11 +28,11 @@ class MyPredictor:
         audio = librosa.to_mono(audio)
         return librosa.resample(audio, orig_sr=orig_sr, target_sr=target_sr)
 
-    def predict(self, audio):
+    def predict(self, audio, user, index):
 
         audio, sr = librosa.load(audio)
         audio = self.prepare_audio(audio, sr, 16_000)
-        sub, starts = self.diarizer.diarize(audio)
+        sub, starts = self.diarizer.diarize(audio, user, index)
         sub = sub.split("\n\n")
         print(starts)
         for i in tqdm(range(len(starts) - 1)):

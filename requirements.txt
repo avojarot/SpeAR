@@ -6,4 +6,7 @@ timm==0.6.12
 torch
 torchaudio
 gdown
+google-cloud-storage
 google-cloud-speech
+pinecone-client
+gantry

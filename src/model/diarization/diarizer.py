@@ -17,7 +17,7 @@ class Diarizer:
         self.device = device
         pass
 
-    def diarize(self, audio):
+    def diarize(self, audio, user, index):
         with torch.inference_mode():
             print("Start preprosses audio")
             image = preprosess(audio).to(self.device)
@@ -29,7 +29,7 @@ class Diarizer:
             clustering = self.clusterize(embedings)
             print("Start diarize_voices")
             similarity, used, last_used = self.diarize_voices(embedings, clustering)
-            return generate_subtitles(last_used)
+            return generate_subtitles(last_used, user, embedings, index)
 
     def clusterize(self, all_embedings):
         norm = all_embedings

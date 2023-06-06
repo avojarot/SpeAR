@@ -1,6 +1,9 @@
 import math
+import uuid
 
 import numpy as np
+
+from src.data.pinecone import insert_row
 
 
 def bic_score(X, labels):
@@ -41,13 +44,14 @@ def num_to_min(n):
     return f"{hours}:{minuts}:{seconds},000"
 
 
-def generate_subtitles(labels):
+def generate_subtitles(labels, user, embedings, index):
     counter = 1
     res = ""
     prev = -1
     curr_time = 0
     prev_time = 0
     starts = [0]
+    names = [str(uuid.uuid4()) for _ in range(len(set(labels)))]
     for i, v in enumerate(labels):
         if curr_time != 0:
             if prev != v:
@@ -57,12 +61,13 @@ def generate_subtitles(labels):
                     + num_to_min(prev_time)
                     + " --> "
                     + num_to_min(curr_time)
-                    + f"\nSpeaker {prev}\n\n"
+                    + f"\nSpeaker {names[prev]}\n\n"
                 )
                 prev_time = curr_time
                 counter += 1
                 starts.append(prev_time)
         prev = v
+        insert_row(index, embedings[i], user, names[prev])
         curr_time += 3
     starts.append(len(labels) * 3)
     res += (
@@ -71,6 +76,6 @@ def generate_subtitles(labels):
         + num_to_min(prev_time)
         + " --> "
         + num_to_min(curr_time)
-        + f"\nSpeaker {prev}\n\n"
+        + f"\nSpeaker {names[prev]}\n\n"
     )
     return res, starts

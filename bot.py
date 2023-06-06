@@ -1,22 +1,31 @@
 import os
 
+import gantry
 import openai
+import pinecone
 import telebot
 from google.cloud import speech
 from telebot import types
 
 from src import Diarizer, MyPredictor, convert_to_wav
+from src.data import create_index, upload_blob
 from src.model.asr import AsrModel
 from src.model.models.dolg import *
 
+gantry_key = "zCrof0OjxV7UDkciA78iWGwuv3M"
+pinecone_key = "9f2bd33c-77a8-4f13-a5fe-a168806ea881"
 token = "6121471539:AAEPfxQU0ed14z0CQxgF57MLCRgkAd5rjSg"
 openai_key = "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"
-openai.api_key = openai_key
 
 bot = telebot.TeleBot(token)
 bot.delete_webhook()
-predictor = MyPredictor()
+pinecone.init(api_key=pinecone_key, environment="us-west1-gcp-free")
+index = create_index()
+gantry.init(gantry_key)
+application = gantry.get_application("SpeAR_3")
+openai.api_key = openai_key
 
+predictor = MyPredictor()
 posible_options = ["SpeAR Ua", "OpenAI", "Google Speech-to-text"]
 concurrent_model = posible_options[0]
 
@@ -49,8 +58,27 @@ def convert_speech_to_text_google(audio_filepath, sr):
     return text
 
 
-def convert_speech_to_text_my(audio_filepath):
-    text = predictor.predict(audio_filepath)
+def convert_speech_to_text_my(audio_filepath, user):
+    text = predictor.predict(audio_filepath, user, index)
+    return text
+
+
+def speach2text(wav_file, sr, message):
+    if concurrent_model == posible_options[0]:
+        text = convert_speech_to_text_my(wav_file, message.from_user.id)
+
+    elif concurrent_model == posible_options[1]:
+        text = convert_speech_to_text_openai(wav_file)
+
+    else:
+        text = convert_speech_to_text_google(wav_file, sr)
+
+    application.log(
+        inputs=[{"record": wav_file, "model": concurrent_model}],
+        outputs=[{"generation": text}],
+    )
+    upload_blob(wav_file)
+    os.remove(wav_file)
     return text
 
 
@@ -81,18 +109,10 @@ def change_model(message: types.Message):
 def asr_in_voice(message: types.Message):
     voice = message.voice if message.voice else message.audio
     voice_file = bot.get_file(voice.file_id)
-    wav_file, sr = convert_to_wav(bot, voice_file)
-
-    if concurrent_model == posible_options[0]:
-        text = convert_speech_to_text_my(wav_file)
-
-    elif concurrent_model == posible_options[1]:
-        text = convert_speech_to_text_openai(wav_file)
-
-    else:
-        text = convert_speech_to_text_google(wav_file, sr)
-
-    os.remove(wav_file)
+    files = convert_to_wav(bot, voice_file)
+    text = ""
+    for wav_file, sr in files:
+        text += speach2text(wav_file, sr, message)
     bot.send_message(message.chat.id, text)
 
 
