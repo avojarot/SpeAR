@@ -1,6 +1,8 @@
 openai
 pytelegrambotapi
 librosa
+moviepy
+python-docx
 nemo_toolkit[asr]~=1.18.0
 timm==0.6.12
 torch
@@ -8,5 +10,8 @@ torchaudio
 gdown
 google-cloud-storage
 google-cloud-speech
+cloud-sql-python-connector
+sqlalchemy
+pg8000
 pinecone-client
 gantry
