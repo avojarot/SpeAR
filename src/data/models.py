@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Unicode
+from sqlalchemy import JSON, Column, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import as_declarative, declared_attr
 
 
@@ -20,6 +20,35 @@ class ExportFormat(AbstractModel):
     name = Column(Unicode)
 
 
-class User(AbstractModel):
+class Model(AbstractModel):
     id = Column(Integer, autoincrement=True)
+
+
+class User(AbstractModel):
+    id = Column(Integer)
     name = Column(Unicode)
+    apikey = Column(Unicode)
+
+
+class ModelTags(AbstractModel):
+    pass
+
+
+class Tags(AbstractModel):
+    pass
+
+
+class Vectors(AbstractModel):
+    pass
+
+
+class Speackers(AbstractModel):
+    pass
+
+
+class Transkribtion(AbstractModel):
+    pass
+
+
+class Audio(AbstractModel):
+    pass
