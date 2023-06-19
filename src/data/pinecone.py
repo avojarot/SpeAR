@@ -21,5 +21,10 @@ def insert_row(index, vector, user_id, name):
 
 
 # TODO add to predict
-def query_voices():
-    pass
+def query_voices(index: pinecone.Index, vectors, user):
+    return index.query(
+        queries=[vectors.tolist()],
+        top_k=1,
+        include_metadata=True,
+        filter={"user": {"$eq": user}},
+    )["results"][0]["matches"]

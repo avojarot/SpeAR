@@ -4,6 +4,7 @@ import docx
 import gantry
 import openai
 import pinecone
+import sqlalchemy
 import telebot
 from google.cloud import speech
 from telebot import types
@@ -171,6 +172,8 @@ def change_model(message: types.Message):
         else:
             return
         do_asr(message, voice_file)
+    else:
+        initail_mock_up(message)
 
 
 @bot.message_handler(content_types=["voice", "audio", "video"])
@@ -191,11 +194,11 @@ def get_markup(buttons=["Вибір моделі", "Вибір формату е
     return markup
 
 
-@bot.message_handler(commands="start")
+@bot.message_handler(commands=["start"])
 def initail_mock_up(message: types.Message):
     bot.send_message(
         message.chat.id,
-        f"Поточна модель: {concurrent_model}, поточний формат експорту {export_type}",
+        f"Поточна модель: {concurrent_model}, поточний формат експорту: {export_type}",
         reply_markup=get_markup(),
     )
 

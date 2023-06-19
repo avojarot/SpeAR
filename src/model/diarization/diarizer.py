@@ -1,7 +1,11 @@
+import uuid
+
 import numpy as np
 import torch
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
+
+from src.data import query_voices
 
 from ..data import preprosess
 from ..models import LineDolgNet
@@ -28,8 +32,10 @@ class Diarizer:
             print("Start clustering")
             clustering = self.clusterize(embedings)
             print("Start diarize_voices")
-            similarity, used, last_used = self.diarize_voices(embedings, clustering)
-            return generate_subtitles(last_used, user, embedings, index)
+            similarity, used, last_used, cluster_names = self.diarize_voices(
+                embedings, clustering, index, user
+            )
+            return generate_subtitles(last_used, user, embedings, index, cluster_names)
 
     def clusterize(self, all_embedings):
         norm = all_embedings
@@ -50,9 +56,19 @@ class Diarizer:
         clustering = KMeans(n_clusters=n_clusters).fit(norm)
         return clustering
 
-    def diarize_voices(self, all_embedings, clustering):
+    def diarize_voices(self, all_embedings, clustering, index, user):
         similarity = []
         used = [[i] for i in clustering.cluster_centers_]
+        cluster_names = []
+
+        for i in used:
+            query = query_voices(index, i[0], user)[0]
+            print(query)
+            if query["score"] > 0.5:
+                cluster_names.append(query["metadata"]["name"])
+            else:
+                cluster_names.append(str(uuid.uuid4()))
+
         original_count = len(used) - 1
         last_used = []
         for i in range(len(all_embedings)):
@@ -69,11 +85,18 @@ class Diarizer:
 
             if max_sim < self.trh:
                 used.append([all_embedings[i]])
-                last_used.append(len(used) - 1)
+
+                query = query_voices(index, all_embedings[i], user)[0]
+                if query["score"] > 0.5:
+                    cluster_names.append(query["metadata"]["name"])
+                else:
+                    cluster_names.append(str(uuid.uuid4()))
+
+                last_used.append(cluster_names[-1])
                 similarity.append(-1)
             else:
                 if used_voice > original_count:
                     used[used_voice].append(all_embedings[i])
-                last_used.append(voice)
+                last_used.append(cluster_names[voice])
                 similarity.append(max_sim)
-        return similarity, used, last_used
+        return similarity, used, last_used, cluster_names

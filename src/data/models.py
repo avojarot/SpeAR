@@ -26,8 +26,11 @@ class Model(AbstractModel):
 
 class User(AbstractModel):
     id = Column(Integer)
-    name = Column(Unicode)
-    apikey = Column(Unicode)
+    name = Column(Unicode, nullable=True)
+    email = Column(Unicode, nullable=True)
+    export_type = Column(Unicode, nullable=True)
+    model = Column(Unicode, nullable=True)
+    apikey = Column(Unicode, nullable=True)
 
 
 class ModelTags(AbstractModel):

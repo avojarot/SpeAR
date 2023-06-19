@@ -1,3 +1,5 @@
+import os
+
 import pg8000
 import sqlalchemy
 from google.cloud.sql.connector import Connector, IPTypes
@@ -13,6 +15,9 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
     ip_type = IPTypes.PUBLIC
 
     # initialize Cloud SQL Python Connector object
+    os.environ[
+        "GOOGLE_APPLICATION_CREDENTIALS"
+    ] = "credentials/spear-bot-388313-6a23d6901400.json"
     connector = Connector()
 
     def getconn() -> pg8000.dbapi.Connection:
